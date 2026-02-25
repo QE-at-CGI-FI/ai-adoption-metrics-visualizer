@@ -5,219 +5,213 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Adoption Metrics Visualizer</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>AI Adoption Metrics Visualizer</h1>
-            <div class="header-actions">
-                <button id="import-btn" class="btn btn-secondary">Import Data</button>
-                <button id="export-btn" class="btn btn-secondary">Export Data</button>
-                <button id="add-data-btn" class="btn btn-primary">Add Monthly Data</button>
+            <div>
+                <h1>AI Adoption Metrics Visualizer</h1>
+                <p>Talent Pipeline Metrics Dashboard</p>
             </div>
-            <input type="file" id="file-input" accept=".json" style="display: none;">
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="openDataModal()">📊 Add Monthly Data</button>
+                <button class="btn btn-secondary" onclick="exportData()">📥 Export Data</button>
+                <button class="btn btn-secondary" onclick="importData()">📤 Import Data</button>
+            </div>
         </header>
 
         <main>
-            <!-- View Selector Tabs -->
-            <section class="view-selector">
-                <div class="tabs">
-                    <button class="tab-btn active" data-view="talent">Talent View</button>
-                    <button class="tab-btn" data-view="client">Client View</button>
-                </div>
-            </section>
-
-            <!-- Data Input Modal -->
-            <div id="data-modal" class="modal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h2 id="modal-title">Add Monthly Data</h2>
-                        <span class="close">&times;</span>
+            <!-- Metrics Pipeline -->
+            <section class="metrics-pipeline">
+                <h2>AI Adoption Pipeline - Latest Metrics</h2>
+                <div class="pipeline-container">
+                    <div class="metric-tile" id="partners-tile">
+                        <div class="metric-number">-</div>
+                        <div class="metric-label">Total Partners</div>
+                        <div class="metric-date">-</div>
                     </div>
-                    <form id="data-form">
-                        <div class="form-group">
-                            <label for="month">Month (optional)</label>
-                            <input type="month" id="month">
-                            <small class="help-text">Leave empty to use current month</small>
+                    
+                    <div class="pipeline-arrow">→</div>
+                    
+                    <div class="metric-tile" id="license-tile">
+                        <div class="metric-number">-</div>
+                        <div class="metric-label">With License</div>
+                        <div class="metric-percentage">-</div>
+                        <div class="metric-date">-</div>
+                    </div>
+                    
+                    <div class="pipeline-arrow">→</div>
+                    
+                    <div class="license-subtiles">
+                        <div class="metric-tile sub-tile" id="github-copilot-tile">
+                            <div class="metric-number">-</div>
+                            <div class="metric-label">GitHub Copilot</div>
+                            <div class="metric-percentage">-</div>
+                            <div class="metric-date">-</div>
                         </div>
-                        <div id="talent-fields" class="view-fields">
-                            <div class="form-group">
-                                <label for="people-count">Total People Count (optional)</label>
-                                <input type="number" id="people-count" min="0">
-                                <small class="help-text">Leave empty to use previous month's value</small>
+                        
+                        <div class="or-divider">OR</div>
+                        
+                        <div class="metric-tile sub-tile" id="chatgpt-enterprise-tile">
+                            <div class="metric-number">-</div>
+                            <div class="metric-label">ChatGPT Enterprise</div>
+                            <div class="metric-percentage">-</div>
+                            <div class="metric-date">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="pipeline-arrow">→</div>
+                    
+                    <div class="metric-tile" id="production-tile">
+                        <div class="metric-number">-</div>
+                        <div class="metric-label">Production Use Allowed</div>
+                        <div class="metric-percentage">-</div>
+                        <div class="metric-date">-</div>
+                    </div>
+                    
+                    <div class="pipeline-arrow">→</div>
+                    
+                    <div class="metric-tile wide-tile" id="copilot-requests-tile">
+                        <div class="metric-label">GitHub Copilot Advanced Requests</div>
+                        <div class="requests-stats">
+                            <div class="stat-item">
+                                <div class="stat-number" id="requests-min">-</div>
+                                <div class="stat-label">Min</div>
                             </div>
-                            <div class="form-group">
-                                <label for="license-users">People with License in Use (optional)</label>
-                                <input type="number" id="license-users" min="0">
+                            <div class="stat-item">
+                                <div class="stat-number" id="requests-avg">-</div>
+                                <div class="stat-label">Avg</div>
                             </div>
-                            <div class="form-group">
-                                <label for="premium-requests">Premium Requests Usage (optional)</label>
-                                <input type="number" id="premium-requests" min="0">
-                            </div>
-                            <div class="form-group">
-                                <label for="ai-coverage">AI Moment Coverage % (optional)</label>
-                                <input type="number" id="ai-coverage" min="0" max="100" step="0.1">
+                            <div class="stat-item">
+                                <div class="stat-number" id="requests-max">-</div>
+                                <div class="stat-label">Max</div>
                             </div>
                         </div>
-                        <div id="client-fields" class="view-fields" style="display: none;">
-                            <div class="form-group">
-                                <label for="total-clients">Total Clients (optional)</label>
-                                <input type="number" id="total-clients" min="0">
-                                <small class="help-text">Leave empty to use previous month's value</small>
-                            </div>
-                            <div class="form-group">
-                                <label for="ai-permission-clients">Clients with AI Permission (optional)</label>
-                                <input type="number" id="ai-permission-clients" min="0">
-                            </div>
-                            <div class="form-group">
-                                <label for="fixed-price-projects">Fixed Price Projects ≤50% complete (optional)</label>
-                                <input type="number" id="fixed-price-projects" min="0">
-                            </div>
-                        </div>
-                        <div class="form-actions">
-                            <button type="button" class="btn btn-secondary" id="cancel-btn">Cancel</button>
-                            <button type="submit" class="btn btn-primary">Save Data</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Talent Metrics Dashboard -->
-            <section id="talent-dashboard" class="dashboard">
-                <h2 class="view-title">Talent Pipeline</h2>
-                <div class="metrics-pipeline">
-                    <div class="pipeline-step">
-                        <div class="step-number">1</div>
-                        <h3>Total People</h3>
-                        <div class="current-metric" id="current-people">-</div>
+                        <div class="metric-date">-</div>
                     </div>
+                    
                     <div class="pipeline-arrow">→</div>
-                    <div class="pipeline-step">
-                        <div class="step-number">2</div>
-                        <h3>License Users</h3>
-                        <div class="current-metric" id="current-license">-</div>
-                        <div class="percentage" id="license-percentage">-</div>
-                    </div>
-                    <div class="pipeline-arrow">→</div>
-                    <div class="pipeline-step">
-                        <div class="step-number">3</div>
-                        <h3>Premium Requests</h3>
-                        <div class="current-metric" id="current-premium">-</div>
-                    </div>
-                    <div class="pipeline-arrow">→</div>
-                    <div class="pipeline-step">
-                        <div class="step-number">4</div>
-                        <h3>AI Coverage</h3>
-                        <div class="current-metric" id="current-coverage">-%</div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Client Metrics Dashboard -->
-            <section id="client-dashboard" class="dashboard" style="display: none;">
-                <h2 class="view-title">Client Pipeline</h2>
-                <div class="metrics-pipeline">
-                    <div class="pipeline-step">
-                        <div class="step-number">1</div>
-                        <h3>Total Clients</h3>
-                        <div class="current-metric" id="current-total-clients">-</div>
-                    </div>
-                    <div class="pipeline-arrow">→</div>
-                    <div class="pipeline-step">
-                        <div class="step-number">2</div>
-                        <h3>AI Permission</h3>
-                        <div class="current-metric" id="current-ai-clients">-</div>
-                        <div class="percentage" id="ai-permission-percentage">-</div>
-                    </div>
-                    <div class="pipeline-arrow">→</div>
-                    <div class="pipeline-step">
-                        <div class="step-number">3</div>
-                        <h3>Fixed Price Projects</h3>
-                        <div class="current-metric" id="current-fixed-projects">-</div>
-                        <div class="percentage" id="fixed-projects-percentage">-</div>
+                    
+                    <div class="metric-tile" id="ai-moment-tile">
+                        <div class="metric-number">-</div>
+                        <div class="metric-label">AI Moment Experience</div>
+                        <div class="metric-percentage">-</div>
+                        <div class="metric-date">-</div>
                     </div>
                 </div>
             </section>
 
             <!-- Charts Section -->
-            <section class="charts">
-                <!-- Talent Charts -->
-                <div id="talent-charts" class="view-content">
-                    <div class="chart-container">
-                        <h3>Talent Monthly Trends</h3>
-                        <canvas id="talent-trends-chart" width="800" height="400"></canvas>
-                    </div>
-                    <div class="chart-container">
-                        <h3>Talent Pipeline Conversion Rates</h3>
-                        <canvas id="talent-conversion-chart" width="800" height="400"></canvas>
-                    </div>
+            <section class="charts-section">
+                <div class="chart-container">
+                    <h3>Monthly Trends</h3>
+                    <canvas id="trendsChart"></canvas>
                 </div>
                 
-                <!-- Client Charts -->
-                <div id="client-charts" class="view-content" style="display: none;">
-                    <div class="chart-container">
-                        <h3>Client Monthly Trends</h3>
-                        <canvas id="client-trends-chart" width="800" height="400"></canvas>
-                    </div>
-                    <div class="chart-container">
-                        <h3>Client Pipeline Conversion Rates</h3>
-                        <canvas id="client-conversion-chart" width="800" height="400"></canvas>
-                    </div>
+                <div class="chart-container">
+                    <h3>Adoption Rates</h3>
+                    <canvas id="adoptionChart"></canvas>
                 </div>
             </section>
 
-            <!-- Data Table -->
+            <!-- Historical Data Table -->
             <section class="data-table-section">
-                <!-- Talent Data Table -->
-                <div id="talent-table" class="view-content">
-                    <h3>Talent Historical Data</h3>
-                    <div class="table-container">
-                        <table id="talent-data-table">
-                            <thead>
-                                <tr>
-                                    <th>Month</th>
-                                    <th>Total People</th>
-                                    <th>License Users</th>
-                                    <th>License %</th>
-                                    <th>Premium Requests</th>
-                                    <th>AI Coverage %</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Data will be populated here -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <!-- Client Data Table -->
-                <div id="client-table" class="view-content" style="display: none;">
-                    <h3>Client Historical Data</h3>
-                    <div class="table-container">
-                        <table id="client-data-table">
-                            <thead>
-                                <tr>
-                                    <th>Month</th>
-                                    <th>Total Clients</th>
-                                    <th>AI Permission</th>
-                                    <th>AI Permission %</th>
-                                    <th>Fixed Price Projects</th>
-                                    <th>Project %</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Data will be populated here -->
-                            </tbody>
-                        </table>
-                    </div>
+                <h3>Historical Data</h3>
+                <div class="table-container">
+                    <table id="data-table">
+                        <thead>
+                            <tr>
+                                <th>Month</th>
+                                <th>Partners</th>
+                                <th>With License</th>
+                                <th>GitHub Copilot</th>
+                                <th>ChatGPT Enterprise</th>
+                                <th>Production Use</th>
+                                <th>Requests Min/Avg/Max</th>
+                                <th>AI Moment</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="data-table-body">
+                            <!-- Data rows will be inserted here -->
+                        </tbody>
+                    </table>
                 </div>
             </section>
         </main>
     </div>
 
-    <script src="chart.js"></script>
+    <!-- Data Entry Modal -->
+    <div id="dataModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Add Monthly Data</h2>
+                <span class="close" onclick="closeDataModal()">&times;</span>
+            </div>
+            <form id="data-form">
+                <div class="form-row">
+                    <label for="month-input">Month:</label>
+                    <input type="month" id="month-input" required>
+                </div>
+                
+                <div class="form-row">
+                    <label for="partners-input">Total Partners:</label>
+                    <input type="number" id="partners-input" min="0" required>
+                </div>
+                
+                <div class="form-row">
+                    <label for="license-input">With License:</label>
+                    <input type="number" id="license-input" min="0" required>
+                </div>
+                
+                <div class="form-row">
+                    <label for="github-copilot-input">GitHub Copilot License:</label>
+                    <input type="number" id="github-copilot-input" min="0" required>
+                </div>
+                
+                <div class="form-row">
+                    <label for="chatgpt-enterprise-input">ChatGPT Enterprise License:</label>
+                    <input type="number" id="chatgpt-enterprise-input" min="0" required>
+                </div>
+                
+                <div class="form-row">
+                    <label for="production-input">Production Use Allowed:</label>
+                    <input type="number" id="production-input" min="0" required>
+                </div>
+                
+                <div class="form-group">
+                    <h4>GitHub Copilot Advanced Requests</h4>
+                    <div class="form-row">
+                        <label for="requests-min-input">Minimum:</label>
+                        <input type="number" id="requests-min-input" min="0" required>
+                    </div>
+                    <div class="form-row">
+                        <label for="requests-avg-input">Average:</label>
+                        <input type="number" id="requests-avg-input" min="0" step="0.1" required>
+                    </div>
+                    <div class="form-row">
+                        <label for="requests-max-input">Maximum:</label>
+                        <input type="number" id="requests-max-input" min="0" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <label for="ai-moment-input">AI Moment Experience:</label>
+                    <input type="number" id="ai-moment-input" min="0" required>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeDataModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="submit-btn">Add Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- File input for import (hidden) -->
+    <input type="file" id="file-input" accept=".json" style="display: none;" onchange="handleFileImport(this)">
+
     <script src="app.js"></script>
 </body>
 </html>
