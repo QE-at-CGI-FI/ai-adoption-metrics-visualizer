@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Adoption Metrics Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>AI Adoption Metrics Visualizer</h1>
+            <div class="header-actions">
+                <button id="import-btn" class="btn btn-secondary">Import Data</button>
+                <button id="export-btn" class="btn btn-secondary">Export Data</button>
+                <button id="add-data-btn" class="btn btn-primary">Add Monthly Data</button>
+            </div>
+            <input type="file" id="file-input" accept=".json" style="display: none;">
+        </header>
+
+        <main>
+            <!-- View Selector Tabs -->
+            <section class="view-selector">
+                <div class="tabs">
+                    <button class="tab-btn active" data-view="talent">Talent View</button>
+                    <button class="tab-btn" data-view="client">Client View</button>
+                </div>
+            </section>
+
+            <!-- Data Input Modal -->
+            <div id="data-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 id="modal-title">Add Monthly Data</h2>
+                        <span class="close">&times;</span>
+                    </div>
+                    <form id="data-form">
+                        <div class="form-group">
+                            <label for="month">Month (optional)</label>
+                            <input type="month" id="month">
+                            <small class="help-text">Leave empty to use current month</small>
+                        </div>
+                        <div id="talent-fields" class="view-fields">
+                            <div class="form-group">
+                                <label for="people-count">Total People Count (optional)</label>
+                                <input type="number" id="people-count" min="0">
+                                <small class="help-text">Leave empty to use previous month's value</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="license-users">People with License in Use (optional)</label>
+                                <input type="number" id="license-users" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="premium-requests">Premium Requests Usage (optional)</label>
+                                <input type="number" id="premium-requests" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="ai-coverage">AI Moment Coverage % (optional)</label>
+                                <input type="number" id="ai-coverage" min="0" max="100" step="0.1">
+                            </div>
+                        </div>
+                        <div id="client-fields" class="view-fields" style="display: none;">
+                            <div class="form-group">
+                                <label for="total-clients">Total Clients (optional)</label>
+                                <input type="number" id="total-clients" min="0">
+                                <small class="help-text">Leave empty to use previous month's value</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="ai-permission-clients">Clients with AI Permission (optional)</label>
+                                <input type="number" id="ai-permission-clients" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="fixed-price-projects">Fixed Price Projects ≤50% complete (optional)</label>
+                                <input type="number" id="fixed-price-projects" min="0">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" id="cancel-btn">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Data</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Talent Metrics Dashboard -->
+            <section id="talent-dashboard" class="dashboard">
+                <h2 class="view-title">Talent Pipeline</h2>
+                <div class="metrics-pipeline">
+                    <div class="pipeline-step">
+                        <div class="step-number">1</div>
+                        <h3>Total People</h3>
+                        <div class="current-metric" id="current-people">-</div>
+                    </div>
+                    <div class="pipeline-arrow">→</div>
+                    <div class="pipeline-step">
+                        <div class="step-number">2</div>
+                        <h3>License Users</h3>
+                        <div class="current-metric" id="current-license">-</div>
+                        <div class="percentage" id="license-percentage">-</div>
+                    </div>
+                    <div class="pipeline-arrow">→</div>
+                    <div class="pipeline-step">
+                        <div class="step-number">3</div>
+                        <h3>Premium Requests</h3>
+                        <div class="current-metric" id="current-premium">-</div>
+                    </div>
+                    <div class="pipeline-arrow">→</div>
+                    <div class="pipeline-step">
+                        <div class="step-number">4</div>
+                        <h3>AI Coverage</h3>
+                        <div class="current-metric" id="current-coverage">-%</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Client Metrics Dashboard -->
+            <section id="client-dashboard" class="dashboard" style="display: none;">
+                <h2 class="view-title">Client Pipeline</h2>
+                <div class="metrics-pipeline">
+                    <div class="pipeline-step">
+                        <div class="step-number">1</div>
+                        <h3>Total Clients</h3>
+                        <div class="current-metric" id="current-total-clients">-</div>
+                    </div>
+                    <div class="pipeline-arrow">→</div>
+                    <div class="pipeline-step">
+                        <div class="step-number">2</div>
+                        <h3>AI Permission</h3>
+                        <div class="current-metric" id="current-ai-clients">-</div>
+                        <div class="percentage" id="ai-permission-percentage">-</div>
+                    </div>
+                    <div class="pipeline-arrow">→</div>
+                    <div class="pipeline-step">
+                        <div class="step-number">3</div>
+                        <h3>Fixed Price Projects</h3>
+                        <div class="current-metric" id="current-fixed-projects">-</div>
+                        <div class="percentage" id="fixed-projects-percentage">-</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Charts Section -->
+            <section class="charts">
+                <!-- Talent Charts -->
+                <div id="talent-charts" class="view-content">
+                    <div class="chart-container">
+                        <h3>Talent Monthly Trends</h3>
+                        <canvas id="talent-trends-chart" width="800" height="400"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Talent Pipeline Conversion Rates</h3>
+                        <canvas id="talent-conversion-chart" width="800" height="400"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Client Charts -->
+                <div id="client-charts" class="view-content" style="display: none;">
+                    <div class="chart-container">
+                        <h3>Client Monthly Trends</h3>
+                        <canvas id="client-trends-chart" width="800" height="400"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Client Pipeline Conversion Rates</h3>
+                        <canvas id="client-conversion-chart" width="800" height="400"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Data Table -->
+            <section class="data-table-section">
+                <!-- Talent Data Table -->
+                <div id="talent-table" class="view-content">
+                    <h3>Talent Historical Data</h3>
+                    <div class="table-container">
+                        <table id="talent-data-table">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Total People</th>
+                                    <th>License Users</th>
+                                    <th>License %</th>
+                                    <th>Premium Requests</th>
+                                    <th>AI Coverage %</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Client Data Table -->
+                <div id="client-table" class="view-content" style="display: none;">
+                    <h3>Client Historical Data</h3>
+                    <div class="table-container">
+                        <table id="client-data-table">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Total Clients</th>
+                                    <th>AI Permission</th>
+                                    <th>AI Permission %</th>
+                                    <th>Fixed Price Projects</th>
+                                    <th>Project %</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="chart.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
